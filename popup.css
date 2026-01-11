@@ -21,6 +21,7 @@ h1 {
   text-align: center;
   margin-bottom: 20px;
 }
+
 .input-grid {
   display: flex;
   gap: 12px;
@@ -77,18 +78,18 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .radio-grid {
-  display: flex;
-  gap: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   margin-bottom: 16px;
   background: #141416;
   border-radius: 10px;
-  padding: 4px;
+  padding: 6px;
   border: 1px solid #27272a;
 }
 
 .radio-option {
   position: relative;
-  flex: 1;
 }
 
 .radio-option input[type="radio"] {
@@ -110,11 +111,11 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
-  color: #dddddd;
+  color: #a1a1aa;
 }
 
 .radio-option label:hover {
-  color: #dddddd;
+  color: #e5e5e5;
 }
 
 .radio-option input[type="radio"]:checked + label {
@@ -122,6 +123,70 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #0a0a0b;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
+}
+
+.config-section {
+  margin-bottom: 16px;
+}
+
+.config-row {
+  display: flex;
+  gap: 10px;
+}
+
+.config-pair {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  background: #0a0a0b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 6px;
+  position: relative;
+}
+
+.config-pair::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 60%;
+  background: #27272a;
+  z-index: 1;
+}
+
+.config-pair input:first-child {
+  padding-right: 8px;
+}
+
+.config-pair input:last-child {
+  padding-left: 8px;
+}
+
+.config-pair input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  color: #fff;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.config-pair input::placeholder {
+  color: #52525b;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.config-pair input:focus {
+  outline: none;
+  color: #00ffff;
 }
 
 .clamp-output {

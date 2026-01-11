@@ -1,171 +1,309 @@
-   const minVWEl = { value: 320 }; // Hidden default
-    const maxVWEl = { value: 1440 }; // Hidden default
-    const minSizeEl = document.getElementById("minSize");
-    const maxSizeEl = document.getElementById("maxSize");
-    const resultEl = document.getElementById("result");
-    const radioButtons = document.querySelectorAll('input[name="propertyType"]');
+// Default configurations
+const DEFAULT_CONFIGS = {
+  text: { minVp: 16, maxVp: 72, minValue: 14, maxValue: 54 },
+  padding: { minVp: 20, maxVp: 100, minValue: 15, maxValue: 50 },
+  margin: { minVp: 20, maxVp: 100, minValue: 15, maxValue: 50 },
+  gap: { minVp: 16, maxVp: 80, minValue: 12, maxValue: 48 }
+};
 
-    let currentClampValue = "";
+// DOM Elements
+const minVWEl = { value: 320 };
+const maxVWEl = { value: 1440 };
+const minSizeEl = document.getElementById("minSize");
+const maxSizeEl = document.getElementById("maxSize");
+const resultEl = document.getElementById("result");
+const radioButtons = document.querySelectorAll('input[name="propertyType"]');
+const configMinValue = document.getElementById("configMinValue");
+const configMinVp = document.getElementById("configMinVp");
+const configMaxValue = document.getElementById("configMaxValue");
+const configMaxVp = document.getElementById("configMaxVp");
 
-    function getMobileSize(desktopPx, propertyType) {
-      if (desktopPx < 10) {
-        return Math.max(desktopPx - 1, 1);
-      }
-      
-      const selectedRadio = document.querySelector(`input[name="propertyType"][value="${propertyType}"]`);
-      
-      if (!selectedRadio || !selectedRadio.dataset.minVp) {
-        return Math.round(desktopPx * 0.75);
-      }
-      
-      const minVP = parseInt(selectedRadio.dataset.minVp);
-      const maxVP = parseInt(selectedRadio.dataset.maxVp);
-      const minValue = parseInt(selectedRadio.dataset.minValue);
-      const maxValue = parseInt(selectedRadio.dataset.maxValue);
-      const smallSubtract = parseInt(selectedRadio.dataset.smallSubtract);
-      
-      if (desktopPx < minVP) {
-        return Math.max(desktopPx - smallSubtract, 1);
-      }
-      
-      const ratio = (desktopPx - minVP) / (maxVP - minVP);
-      const mobileSize = minValue + ratio * (maxValue - minValue);
-      
-      return Math.round(mobileSize);
-    }
+let currentClampValue = "";
+let configs = { ...DEFAULT_CONFIGS };
+let saveTimeout = null;
 
-    function updateMinSize() {
-      const maxPx = +maxSizeEl.value;
-      const selectedProperty = document.querySelector('input[name="propertyType"]:checked').value;
+// Initialize
+async function init() {
+  await loadConfigs();
+  applyConfigsToRadios();
+  const selectedRadio = document.querySelector('input[name="propertyType"]:checked');
+  loadConfigInputs(selectedRadio.value);
+  updateMinSize();
+}
 
-      if (maxPx && maxPx.toString().length >= 2) {
-        const calculatedMin = getMobileSize(maxPx, selectedProperty);
-        minSizeEl.value = calculatedMin;
-        updateClamp();
-      }
-    }
-
-    function updateClamp() {
-      const minVW = +minVWEl.value;
-      const maxVW = +maxVWEl.value;
-      const minPx = +minSizeEl.value;
-      const maxPx = +maxSizeEl.value;
-
-      resultEl.classList.remove("copied");
-
-      if (!minVW || !maxVW || !minPx || !maxPx) {
-        resultEl.innerHTML = '<span class="error-message">Enter max values</span>';
-        currentClampValue = "";
-        return;
-      }
-
-      if (minVW >= maxVW || minPx >= maxPx) {
-        resultEl.innerHTML = '<span class="error-message">Min must be < Max</span>';
-        currentClampValue = "";
-        return;
-      }
-
-      const slope = (maxPx - minPx) / (maxVW - minVW);
-      const vwVal = (slope * 100).toFixed(2);
-      const interceptPx = minPx - slope * minVW;
-      
-      //Output clamp in rem units
-      // const minRem = (minPx / 16).toFixed(2);
-      // const maxRem = (maxPx / 16).toFixed(2);
-      // const interceptRem = (interceptPx / 16).toFixed(2);
-
-      // currentClampValue = `clamp(${minRem}rem, ${interceptRem}rem + ${vwVal}vw, ${maxRem}rem)`;
-
-      currentClampValue = `clamp(${minPx}px, ${interceptPx.toFixed(2)}px + ${vwVal}vw, ${maxPx}px)`;
-      resultEl.textContent = currentClampValue;
-    }
-
-    function copyClamp() {
-      if (!currentClampValue) return;
-
-      navigator.clipboard.writeText(currentClampValue)
-        .then(() => {
-          resultEl.classList.add("copied");
-          setTimeout(() => {
-            resultEl.classList.remove("copied");
-          }, 1500);
-        })
-        .catch((err) => {
-          console.error("Failed to copy:", err);
-        });
-    }
-
-    maxSizeEl.addEventListener("input", updateMinSize);
-    minSizeEl.addEventListener("input", updateClamp);
-    radioButtons.forEach((radio) => radio.addEventListener("change", updateMinSize));
-    resultEl.addEventListener("click", copyClamp);
-
-    // Mouse wheel scroll on focused inputs
-    function handleWheel(e, inputEl) {
-      if (document.activeElement === inputEl) {
-        e.preventDefault();
-        const currentValue = parseInt(inputEl.value) || 0;
-        const newValue = e.deltaY < 0 ? currentValue + 1 : currentValue - 1;
-        
-        // Respect min/max constraints
-        const min = parseInt(inputEl.min) || -Infinity;
-        const max = parseInt(inputEl.max) || Infinity;
-        inputEl.value = Math.max(min, Math.min(max, newValue));
-        
-        // Trigger input event to update calculations
-        inputEl.dispatchEvent(new Event('input'));
-      }
-    }
-
-    minSizeEl.addEventListener("wheel", (e) => handleWheel(e, minSizeEl));
-    maxSizeEl.addEventListener("wheel", (e) => handleWheel(e, maxSizeEl));
-
-    // Listen for messages from background
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.action === "COPY_AND_CLOSE") {
-        if (currentClampValue) {
-          navigator.clipboard.writeText(currentClampValue).then(() => {
-            window.close();
-          });
+// Load configs from chrome.storage.sync or localStorage fallback
+async function loadConfigs() {
+  return new Promise((resolve) => {
+    // Check if chrome.storage is available (extension context)
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get(['propertyConfigs'], (result) => {
+        if (result.propertyConfigs) {
+          configs = result.propertyConfigs;
         }
+        resolve();
+      });
+    } else {
+      // Fallback to localStorage for testing outside extension
+      const stored = localStorage.getItem('propertyConfigs');
+      if (stored) {
+        configs = JSON.parse(stored);
       }
+      resolve();
+    }
+  });
+}
 
-      if (message.action === "SWITCH_RADIO") {
-        const radios = Array.from(document.querySelectorAll('input[name="propertyType"]'));
-        if (!radios.length) return;
+// Save configs to chrome.storage.sync or localStorage fallback (debounced)
+function saveConfigs() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set({ propertyConfigs: configs }, () => {
+        console.log('Configs saved to chrome.storage');
+      });
+    } else {
+      // Fallback to localStorage
+      localStorage.setItem('propertyConfigs', JSON.stringify(configs));
+      console.log('Configs saved to localStorage');
+    }
+  }, 300);
+}
 
-        let currentIndex = radios.findIndex((r) => r.checked);
-        let nextIndex = (currentIndex + 1) % radios.length;
-        radios[nextIndex].checked = true;
-        radios[nextIndex].dispatchEvent(new Event('change'));
-      }
-    });
+// Apply configs to radio data attributes
+function applyConfigsToRadios() {
+  radioButtons.forEach((radio) => {
+    const type = radio.value;
+    const config = configs[type];
+    radio.dataset.minVp = config.minVp;
+    radio.dataset.maxVp = config.maxVp;
+    radio.dataset.minValue = config.minValue;
+    radio.dataset.maxValue = config.maxValue;
+    radio.dataset.smallSubtract = config.minValue - config.minVp;
+  });
+}
 
-    // Keyboard shortcuts (for when popup is focused)
-    document.addEventListener('keydown', (e) => {
-      // Ctrl+Shift+S to switch radio
-      if (e.ctrlKey && e.shiftKey && e.key === 'S') {
-        e.preventDefault();
-        
-        const radios = Array.from(document.querySelectorAll('input[name="propertyType"]'));
-        if (!radios.length) return;
+// Load config inputs for selected radio
+function loadConfigInputs(type) {
+  const config = configs[type];
+  configMinValue.value = config.minValue;
+  configMinVp.value = config.minVp;
+  configMaxValue.value = config.maxValue;
+  configMaxVp.value = config.maxVp;
+}
 
-        let currentIndex = radios.findIndex((r) => r.checked);
-        let nextIndex = (currentIndex + 1) % radios.length;
-        radios[nextIndex].checked = true;
-        radios[nextIndex].dispatchEvent(new Event('change'));
-      }
+// Save config from inputs (with auto-reset on empty)
+function saveConfigFromInputs() {
+  const selectedRadio = document.querySelector('input[name="propertyType"]:checked');
+  const type = selectedRadio.value;
+  
+  const minValueInput = configMinValue.value.trim();
+  const minVpInput = configMinVp.value.trim();
+  const maxValueInput = configMaxValue.value.trim();
+  const maxVpInput = configMaxVp.value.trim();
 
-      // Ctrl+Shift+X to copy and close
-      if (e.ctrlKey && e.shiftKey && e.key === 'X') {
-        e.preventDefault();
-        if (currentClampValue) {
-          navigator.clipboard.writeText(currentClampValue).then(() => {
-            window.close();
-          });
-        }
-      }
-    });
-
-    // Initial render
+  // Check if all inputs are empty - auto reset to defaults
+  if (!minValueInput && !minVpInput && !maxValueInput && !maxVpInput) {
+    configs[type] = { ...DEFAULT_CONFIGS[type] };
+    applyConfigsToRadios();
+    loadConfigInputs(type);
+    saveConfigs();
     updateMinSize();
+    return;
+  }
+
+  const minValue = parseInt(minValueInput) || 1;
+  const minVp = parseInt(minVpInput) || 1;
+  const maxValue = parseInt(maxValueInput) || 1;
+  const maxVp = parseInt(maxVpInput) || 1;
+
+  configs[type] = { minVp, maxVp, minValue, maxValue };
+  
+  // Update radio data attributes
+  selectedRadio.dataset.minVp = minVp;
+  selectedRadio.dataset.maxVp = maxVp;
+  selectedRadio.dataset.minValue = minValue;
+  selectedRadio.dataset.maxValue = maxValue;
+  selectedRadio.dataset.smallSubtract = minValue - minVp;
+
+  saveConfigs();
+  updateMinSize();
+}
+
+// Get mobile size calculation
+function getMobileSize(desktopPx, propertyType) {
+  if (desktopPx < 10) {
+    return Math.max(desktopPx - 1, 1);
+  }
+  
+  const selectedRadio = document.querySelector(`input[name="propertyType"][value="${propertyType}"]`);
+  
+  if (!selectedRadio || !selectedRadio.dataset.minVp) {
+    return Math.round(desktopPx * 0.75);
+  }
+  
+  const minVP = parseInt(selectedRadio.dataset.minVp);
+  const maxVP = parseInt(selectedRadio.dataset.maxVp);
+  const minValue = parseInt(selectedRadio.dataset.minValue);
+  const maxValue = parseInt(selectedRadio.dataset.maxValue);
+  const smallSubtract = Math.abs(minVP - minValue); // Use absolute value
+  
+  if (desktopPx < minVP) {
+    return Math.max(desktopPx - smallSubtract, 1);
+  }
+  
+  const ratio = (desktopPx - minVP) / (maxVP - minVP);
+  const mobileSize = minValue + ratio * (maxValue - minValue);
+  
+  return Math.round(mobileSize);
+}
+
+function updateMinSize() {
+  const maxPx = +maxSizeEl.value;
+  const selectedProperty = document.querySelector('input[name="propertyType"]:checked').value;
+
+  if (maxPx && maxPx.toString().length >= 2) {
+    const calculatedMin = getMobileSize(maxPx, selectedProperty);
+    minSizeEl.value = calculatedMin;
+    updateClamp();
+  }
+}
+
+function updateClamp() {
+  const minVW = +minVWEl.value;
+  const maxVW = +maxVWEl.value;
+  const minPx = +minSizeEl.value;
+  const maxPx = +maxSizeEl.value;
+
+  resultEl.classList.remove("copied");
+
+  if (!minVW || !maxVW || !minPx || !maxPx) {
+    resultEl.innerHTML = '<span class="error-message">Enter max values</span>';
+    currentClampValue = "";
+    return;
+  }
+
+  const slope = (maxPx - minPx) / (maxVW - minVW);
+  const vwVal = (slope * 100).toFixed(2);
+  const interceptPx = minPx - slope * minVW;
+
+  currentClampValue = `clamp(${minPx}px, ${interceptPx.toFixed(2)}px + ${vwVal}vw, ${maxPx}px)`;
+  resultEl.textContent = currentClampValue;
+}
+
+function copyClamp() {
+  if (!currentClampValue) return;
+
+  navigator.clipboard.writeText(currentClampValue)
+    .then(() => {
+      resultEl.classList.add("copied");
+      setTimeout(() => {
+        resultEl.classList.remove("copied");
+      }, 1500);
+    })
+    .catch((err) => {
+      console.error("Failed to copy:", err);
+    });
+}
+
+// Reset to defaults (removed button, keeping function for potential use)
+function resetToDefaults() {
+  const selectedRadio = document.querySelector('input[name="propertyType"]:checked');
+  const type = selectedRadio.value;
+  configs[type] = { ...DEFAULT_CONFIGS[type] };
+  applyConfigsToRadios();
+  loadConfigInputs(type);
+  saveConfigs();
+  updateMinSize();
+}
+
+// Event Listeners
+maxSizeEl.addEventListener("input", updateMinSize);
+minSizeEl.addEventListener("input", updateClamp);
+
+radioButtons.forEach((radio) => {
+  radio.addEventListener("change", () => {
+    loadConfigInputs(radio.value);
+    updateMinSize();
+  });
+});
+
+configMinValue.addEventListener("input", saveConfigFromInputs);
+configMinVp.addEventListener("input", saveConfigFromInputs);
+configMaxValue.addEventListener("input", saveConfigFromInputs);
+configMaxVp.addEventListener("input", saveConfigFromInputs);
+
+resultEl.addEventListener("click", copyClamp);
+
+// Mouse wheel scroll on focused inputs
+function handleWheel(e, inputEl) {
+  if (document.activeElement === inputEl) {
+    e.preventDefault();
+    const currentValue = parseInt(inputEl.value) || 0;
+    const newValue = e.deltaY < 0 ? currentValue + 1 : currentValue - 1;
+    
+    const min = parseInt(inputEl.min) || -Infinity;
+    const max = parseInt(inputEl.max) || Infinity;
+    inputEl.value = Math.max(min, Math.min(max, newValue));
+    
+    inputEl.dispatchEvent(new Event('input'));
+  }
+}
+
+minSizeEl.addEventListener("wheel", (e) => handleWheel(e, minSizeEl));
+maxSizeEl.addEventListener("wheel", (e) => handleWheel(e, maxSizeEl));
+configMinValue.addEventListener("wheel", (e) => handleWheel(e, configMinValue));
+configMinVp.addEventListener("wheel", (e) => handleWheel(e, configMinVp));
+configMaxValue.addEventListener("wheel", (e) => handleWheel(e, configMaxValue));
+configMaxVp.addEventListener("wheel", (e) => handleWheel(e, configMaxVp));
+
+// Listen for messages from background
+if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === "COPY_AND_CLOSE") {
+      if (currentClampValue) {
+        navigator.clipboard.writeText(currentClampValue).then(() => {
+          window.close();
+        });
+      }
+    }
+
+    if (message.action === "SWITCH_RADIO") {
+      const radios = Array.from(document.querySelectorAll('input[name="propertyType"]'));
+      if (!radios.length) return;
+
+      let currentIndex = radios.findIndex((r) => r.checked);
+      let nextIndex = (currentIndex + 1) % radios.length;
+      radios[nextIndex].checked = true;
+      loadConfigInputs(radios[nextIndex].value);
+      updateMinSize();
+    }
+  });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+    e.preventDefault();
+    
+    const radios = Array.from(document.querySelectorAll('input[name="propertyType"]'));
+    if (!radios.length) return;
+
+    let currentIndex = radios.findIndex((r) => r.checked);
+    let nextIndex = (currentIndex + 1) % radios.length;
+    radios[nextIndex].checked = true;
+    loadConfigInputs(radios[nextIndex].value);
+    updateMinSize();
+  }
+
+  if (e.ctrlKey && e.shiftKey && e.key === 'X') {
+    e.preventDefault();
+    if (currentClampValue) {
+      navigator.clipboard.writeText(currentClampValue).then(() => {
+        window.close();
+      });
+    }
+  }
+});
+
+// Initialize on load
+init();
