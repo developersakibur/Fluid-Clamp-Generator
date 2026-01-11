@@ -68,12 +68,15 @@
       const slope = (maxPx - minPx) / (maxVW - minVW);
       const vwVal = (slope * 100).toFixed(2);
       const interceptPx = minPx - slope * minVW;
+      
+      //Output clamp in rem units
+      // const minRem = (minPx / 16).toFixed(2);
+      // const maxRem = (maxPx / 16).toFixed(2);
+      // const interceptRem = (interceptPx / 16).toFixed(2);
 
-      const minRem = (minPx / 16).toFixed(2);
-      const maxRem = (maxPx / 16).toFixed(2);
-      const interceptRem = (interceptPx / 16).toFixed(2);
+      // currentClampValue = `clamp(${minRem}rem, ${interceptRem}rem + ${vwVal}vw, ${maxRem}rem)`;
 
-      currentClampValue = `clamp(${minRem}rem, ${interceptRem}rem + ${vwVal}vw, ${maxRem}rem)`;
+      currentClampValue = `clamp(${minPx}px, ${interceptPx.toFixed(2)}px + ${vwVal}vw, ${maxPx}px)`;
       resultEl.textContent = currentClampValue;
     }
 
