@@ -1,9 +1,9 @@
 // Default configurations
 const DEFAULT_CONFIGS = {
-  text: { minVp: 16, maxVp: 72, minValue: 14, maxValue: 54 },
-  padding: { minVp: 20, maxVp: 100, minValue: 15, maxValue: 50 },
-  margin: { minVp: 20, maxVp: 100, minValue: 15, maxValue: 50 },
-  gap: { minVp: 16, maxVp: 80, minValue: 12, maxValue: 48 }
+  text: { minValue: 14, minVp: 16, maxValue: 54, maxVp: 72 },
+  padding: { minValue: 10, minVp: 20, maxValue: 50, maxVp: 100 },
+  margin: { minValue: 10, minVp: 20, maxValue: 50, maxVp: 100 },
+  gap: { minValue: 5, minVp: 10, maxValue: 50, maxVp: 100 }
 };
 
 // DOM Elements
