@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "clamp() Generator",
+  "version": "1.0",
+  "description": "Generate fluid CSS clamp() values",
+  "icons": {
+    "128": "icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "clamp() Generator",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "open-clamp": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Z"
+      },
+      "description": "Open clamp generator"
+    },
+    "copy-and-close": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X"
+      },
+      "description": "Copy clamp and close"
+    },
+    "switch-radio": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "Switch property type"
+    }
+  }
+}

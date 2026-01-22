@@ -1,0 +1,231 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 380px;
+  background: #0a0a0b;
+  color: #e5e5e5;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #00ffff;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.input-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group:first-child {
+  flex: 0 0 35%;
+}
+
+.input-group:last-child {
+  flex: 0 0 calc(65% - 12px);
+}
+
+.input-group input {
+  background: #141416;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  color: #fff;
+  text-align: center;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input-group input::placeholder {
+  color: #52525b;
+  font-weight: 500;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #00ffff;
+  background: #18181b;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1), 0 0 20px rgba(34, 211, 238, 0.1);
+}
+
+.input-group input:hover:not(:focus) {
+  border-color: #3f3f46;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.radio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+  background: #141416;
+  border-radius: 10px;
+  padding: 6px;
+  border: 1px solid #27272a;
+}
+
+.radio-option {
+  position: relative;
+}
+
+.radio-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radio-option label {
+  display: block;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  color: #a1a1aa;
+}
+
+.radio-option label:hover {
+  color: #e5e5e5;
+}
+
+.radio-option input[type="radio"]:checked + label {
+  background: linear-gradient(135deg, #00ffff 0%, #06b6d4 100%);
+  color: #0a0a0b;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
+}
+
+.config-section {
+  margin-bottom: 16px;
+  display: none;
+}
+
+.config-row {
+  display: flex;
+  gap: 10px;
+}
+
+.config-pair {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  background: #0a0a0b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 6px;
+  position: relative;
+}
+
+.config-pair::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 60%;
+  background: #27272a;
+  z-index: 1;
+}
+
+.config-pair input:first-child {
+  padding-right: 8px;
+}
+
+.config-pair input:last-child {
+  padding-left: 8px;
+}
+
+.config-pair input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  color: #fff;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.config-pair input::placeholder {
+  color: #52525b;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.config-pair input:focus {
+  outline: none;
+  color: #00ffff;
+}
+
+.clamp-output {
+  background: #141416;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+  padding: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: #00ffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  word-break: break-all;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.clamp-output:hover {
+  border-color: #00ffff;
+  background: #18181b;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.1);
+}
+
+.clamp-output:active {
+  transform: scale(0.98);
+}
+
+.clamp-output.copied {
+  background: linear-gradient(135deg, #00ffff 0%, #06b6d4 100%);
+  border-color: #00ffff;
+  color: #0a0a0b;
+}
+
+.clamp-output .error-message {
+  color: #f87171;
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>clamp() Generator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <!-- <h1>clamp(developersakibur)</h1> -->
+  
+  <div class="input-grid">
+    <div class="input-group">
+      <label></label>
+      <input id="minSize" type="number" value="" min="5" max="800" step="1" placeholder="Min">
+    </div>
+    <div class="input-group">
+      <label></label>
+      <input id="maxSize" type="number" value="" min="10" max="1000" step="1" placeholder="Max" autofocus>
+    </div>
+  </div>
+
+  <div class="radio-grid">
+    <div class="radio-option">
+      <input type="radio" name="propertyType" id="radioText" value="text" checked>
+      <label for="radioText">Text</label>
+    </div>
+
+    <div class="radio-option">
+      <input type="radio" name="propertyType" id="radioPadding" value="padding">
+      <label for="radioPadding">Spacing</label>
+    </div>
+
+    <!-- <div class="radio-option">
+      <input type="radio" name="propertyType" id="radioMargin" value="margin">
+      <label for="radioMargin">Margin</label>
+    </div> -->
+
+    <!-- <div class="radio-option">
+      <input type="radio" name="propertyType" id="radioGap" value="gap">
+      <label for="radioGap">Gap</label>
+    </div> -->
+  </div>
+
+  <div class="config-section">
+    <div class="config-row">
+      <div class="config-pair">
+        <input id="configMinValue" type="number" min="1" max="500" step="1" placeholder="Min Val">
+        <input id="configMinVp" type="number" min="1" max="2000" step="1" placeholder="Min VP">
+      </div>
+      <div class="config-pair">
+        <input id="configMaxValue" type="number" min="1" max="500" step="1" placeholder="Max Val">
+        <input id="configMaxVp" type="number" min="1" max="2000" step="1" placeholder="Max VP">
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="clamp-output">clamp(00px, 00.0px + 0.00vw, 0px)</div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
